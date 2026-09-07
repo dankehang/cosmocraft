@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CosmoCraft · 太空沙盒</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <div id="hud" class="hidden">
+    <div id="crosshair">＋</div>
+    <div id="hotbar"></div>
+    <div id="info">
+      <div id="planet-label"></div>
+      <div id="coords"></div>
+      <div id="fps"></div>
+      <div id="controls-hint">WASD 移动 · 空格 跳跃 · F 飞行 · Shift 加速 · 左键 挖掘 · 右键 放置 · 1-9 选择 · X 换星球 · Esc 释放鼠标</div>
+    </div>
+  </div>
+  <div id="pause-menu" class="hidden">
+    <h1>CosmoCraft</h1>
+    <p class="sub">在无垠太空的星球之间，自由探索与建造</p>
+    <button id="play-btn">开始探索</button>
+    <button id="controls-btn">操作说明</button>
+    <div id="controls-panel" class="hidden">
+      <p><b>移动</b> — WASD</p>
+      <p><b>跳跃</b> — 空格（长按空中可轻微悬浮）</p>
+      <p><b>飞行模式</b> — F 键切换（Shift 加速，Space 上升，Ctrl/Z 下降）</p>
+      <p><b>挖掘方块</b> — 鼠标左键</p>
+      <p><b>放置方块</b> — 鼠标右键</p>
+      <p><b>选择方块</b> — 数字键 1-9 或滚轮</p>
+      <p><b>切换星球</b> — 按键 X（传送至下一颗程序化生成的星球）</p>
+      <p><b>释放鼠标</b> — Esc</p>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
