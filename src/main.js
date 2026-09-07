@@ -5,7 +5,16 @@ import { BLOCKS, PALETTES } from './blocks.js';
 import { makeSeeded } from './noise.js';
 
 // ---------- renderer / scene / camera ----------
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (e) {
+  document.body.innerHTML =
+    '<div style="font-family:sans-serif;color:#fff;background:#111;height:100vh;display:flex;"' +
+    'align-items:center;justify-content:center;text-align:center;padding:30px">' +
+    '你的浏览器或设备不支持 WebGL，无法运行 CosmoCraft。<br/>请使用支持 WebGL 的现代浏览器（Chrome / Edge / Firefox）并开启硬件加速。</div>';
+  throw e;
+}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('app').appendChild(renderer.domElement);
