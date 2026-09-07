@@ -140,7 +140,7 @@ function nextPlanet() {
   const n = 1 + Math.floor(Math.random() * 30);
   player.spawn(Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2, 45,
     Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2, Math.random() * 6.28);
-  world.updateAround(player.pos.x, player.pos.z, 4);
+  world.updateAround(player.pos.x, player.pos.z, 3);
 }
 document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyX') nextPlanet();
@@ -190,7 +190,7 @@ function tick() {
 
   if (player.pointerLocked) {
     player.update(dt);
-    world.updateAround(player.pos.x, player.pos.z, 4);
+    world.updateAround(player.pos.x, player.pos.z, 3);
 
     // sun follows player
     sunLight.position.set(player.pos.x + 120, 200, player.pos.z + 60);

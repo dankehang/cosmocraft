@@ -45,8 +45,6 @@ export class World {
     const region = fbm(x * 0.008, z * 0.008, s + 1000, 3);
     const detail = fbm(x * 0.05, z * 0.05, s + 2000, 4);
     let h = 10 + region * 30 * p.hill + (detail - 0.5) * 12;
-    // water keeps a base level so planets with water feel oceanic/land mix
-    if (p.water > 2) h = Math.max(h, p.water + 2);
     return Math.max(2, Math.min(WORLD_HEIGHT - 8, Math.floor(h)));
   }
 
