@@ -1,18 +1,10 @@
-// Deterministic seeded PRNG + value noise with fBm (fractal Brownian motion).
-function mulberry32(seed) {
-  let a = seed >>> 0;
-  return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
+// Deterministic seeded hashing + value noise with fBm (fractal Brownian motion).
+// All mixing uses Math.imul so every step stays in int32 — no double-precision
+// truncation, no platform-dependent behavior.
 export function hash2(x, z, seed) {
-  let n = x * 374761393 + z * 668265263 + seed * 1442695040888963;
-  n = (n ^ (n >> 13)) * 1274126177;
-  n = n ^ (n >> 16);
+  let n = (Math.imul(x | 0, 374761393) + Math.imul(z | 0, 668265263) + Math.imul(seed | 0, 1442695041)) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  n = n ^ (n >>> 16);
   return (n >>> 0) / 4294967296;
 }
 
@@ -38,11 +30,6 @@ export function fbm(x, z, seed, octaves = 4, lacunarity = 2.0, gain = 0.5) {
     freq *= lacunarity;
   }
   return sum / norm; // 0..1
-}
-
-// Helper: deterministic context for a whole planet
-export function makeRng(seed) {
-  return { next: mulberry32(seed), noise: (x, z, oct) => fbm(x, z, seed, oct) };
 }
 
 export function makeSeeded(seedStr) {

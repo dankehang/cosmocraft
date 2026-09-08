@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { WORLD_HEIGHT } from './world.js';
 
-const EYE_HEIGHT = 1.62;
-const HALF_W = 0.3;
+// shared with main.js for the block-placement overlap check
+export const EYE_HEIGHT = 1.62;
+export const HALF_W = 0.3;
 const GRAVITY = 26;
 const WALK_SPEED = 5.2;
 const FLY_SPEED = 9.0;

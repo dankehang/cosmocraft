@@ -1,5 +1,5 @@
 // Block definitions. Each block has distinct colors for top/side/bottom,
-// giving a clean low-poly voxel look. `solid:false` blocks are not meshed.
+// giving a clean low-poly voxel look.
 export const AIR = 0;
 
 export const BLOCKS = {
@@ -21,8 +21,6 @@ export const BLOCKS = {
   15: { name: '蓝色玻璃', top: [90,170,240], side: [90,170,240], bottom: [90,170,240], transparent: true },
   16: { name: '深空合金', top: [90,120,160], side: [70,100,140], bottom: [90,120,160] },
 };
-
-export const BLOCK_COUNT = 17;
 
 // Time of day / sky tuning per planet
 export const PALETTES = [

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { World, CHUNK_SIZE } from './world.js';
-import { Player } from './player.js';
+import { World, CHUNK_SIZE, blockHighlight } from './world.js';
+import { Player, EYE_HEIGHT, HALF_W } from './player.js';
 import { BLOCKS, PALETTES } from './blocks.js';
 import { makeSeeded } from './noise.js';
 
@@ -37,6 +37,9 @@ scene.add(sunSprite);
 const seed = makeSeeded('cosmocraft');
 const world = new World(seed, scene);
 const player = new Player(camera, renderer.domElement, world);
+scene.add(blockHighlight);
+// start just above the terrain surface, never buried inside a mountain
+player.spawn(0, world.heightAt(0, 0) + 2.7, 0, 0);
 
 // ---------- sky & sun per planet ----------
 const background = new THREE.Color();
@@ -84,7 +87,7 @@ buildHotbar();
 
 document.addEventListener('keydown', (e) => {
   if (e.code.startsWith('Digit')) {
-    const n = parseInt(e.code.slice(5));
+    const n = e.code === 'Digit0' ? 10 : parseInt(e.code.slice(5));
     if (n >= 1 && n <= PLACEABLE.length) selectSlot(n - 1);
   }
 });
@@ -96,34 +99,32 @@ document.addEventListener('wheel', (e) => {
 // ---------- input: break / place ----------
 const raycaster = new THREE.Raycaster();
 const center = new THREE.Vector2(0, 0);
-let pointedMesh = null;
 
 function floorVec(v) {
   return new THREE.Vector3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
 }
 
+// Only chunks whose center is within pick reach + half chunk diagonal matter.
+const PICK_RADIUS_SQ = (7 + CHUNK_SIZE * 0.75) ** 2;
 function getTerrainMeshes() {
   const out = [];
+  const px = player.pos.x, pz = player.pos.z;
   for (const c of world.chunks.values()) {
-    if (c.mesh) out.push(c.mesh, c.tmesh);
+    const dx = c.cx * CHUNK_SIZE + CHUNK_SIZE / 2 - px;
+    const dz = c.cz * CHUNK_SIZE + CHUNK_SIZE / 2 - pz;
+    if (dx * dx + dz * dz > PICK_RADIUS_SQ) continue;
+    if (c.mesh) out.push(c.mesh);
+    if (c.tmesh) out.push(c.tmesh);
   }
   return out;
 }
 
 function pick(distance) {
   raycaster.setFromCamera(center, camera);
-  const hits = raycaster.intersectObjects(getTerrainMeshes(), false).filter(h =>
-    h.object.userData.noBlock !== true
-  );
-  if (!hits.length) return null;
-  const hit = hits[0];
-  if (hit.distance > distance) return null;
-  return hit;
+  raycaster.far = distance;
+  const hits = raycaster.intersectObjects(getTerrainMeshes(), false);
+  return hits.length ? hits[0] : null;
 }
-
-// wireframe highlight
-import { blockHighlight } from './world.js';
-scene.add(blockHighlight);
 
 renderer.domElement.addEventListener('mousedown', (e) => {
   if (!player.pointerLocked) return;
@@ -134,10 +135,14 @@ renderer.domElement.addEventListener('mousedown', (e) => {
     world.setBlock(b.x, b.y, b.z, 0);
   } else if (e.button === 2) {
     const place = floorVec(hit.point.clone().add(hit.face.normal.clone().multiplyScalar(0.5)));
-    const id = PLACEABLE[selected];
-    if (world.getBlock(place.x, place.y, place.z) === 0) {
-      world.setBlock(place.x, place.y, place.z, id);
-    }
+    if (world.getBlock(place.x, place.y, place.z) !== 0) return;
+    // refuse placement that would intersect the player's own body
+    const feet = player.pos.y - EYE_HEIGHT;
+    const overlapsPlayer =
+      place.x < player.pos.x + HALF_W && place.x + 1 > player.pos.x - HALF_W &&
+      place.z < player.pos.z + HALF_W && place.z + 1 > player.pos.z - HALF_W &&
+      place.y < player.pos.y && place.y + 1 > feet;
+    if (!overlapsPlayer) world.setBlock(place.x, place.y, place.z, PLACEABLE[selected]);
   }
 });
 document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -147,8 +152,10 @@ function nextPlanet() {
   world.setPlanet(world.planetIndex + 1);
   applyPlanetVisuals();
   const n = 1 + Math.floor(Math.random() * 30);
-  player.spawn(Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2, 45,
-    Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2, Math.random() * 6.28);
+  const sx = Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2;
+  const sz = Math.floor(Math.random() * n * CHUNK_SIZE) - n * CHUNK_SIZE / 2;
+  // spawn just above the terrain surface so the player never drops through it
+  player.spawn(sx, world.heightAt(sx, sz) + 2.7, sz, Math.random() * 6.28);
   world.updateAround(player.pos.x, player.pos.z, 3);
 }
 document.addEventListener('keydown', (e) => {
@@ -211,10 +218,8 @@ function tick() {
       const b = floorVec(hit.point.clone().sub(hit.face.normal.clone().multiplyScalar(0.5)));
       blockHighlight.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
       blockHighlight.visible = true;
-      pointedMesh = hit.object;
     } else {
       blockHighlight.visible = false;
-      pointedMesh = null;
     }
 
     coordEl.textContent =

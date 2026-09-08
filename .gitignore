@@ -4,4 +4,4 @@ dist
 verify.py
 playwright-report
 __pycache__/
-.DS_Store
+.DS_Store.trae-html-share-packages/
